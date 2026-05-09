@@ -34,7 +34,7 @@ class utilisateursController {
         });
       }
 
-      const { nom, prenom, email, password, tel, role } = req.body;
+      const { nom, prenom, email, motDePasse, tel, role } = req.body;
 
       // Vérifier si l'email existe déjà
       const existingUser = await this.Utilisateur.findOne({
@@ -66,14 +66,14 @@ class utilisateursController {
       
       // Hasher le mot de passe
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const hashedPassword = await bcrypt.hash(motDePasse, salt);
 
       // Créer l'utilisateur
       const utilisateur = await this.Utilisateur.create({
         nom,
         prenom,
         email,
-        password: hashedPassword,
+        motDePasse: hashedPassword,
         tel,
         statutCompte: 'Actif',
       }, { transaction });
