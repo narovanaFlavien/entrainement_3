@@ -2,7 +2,7 @@
 import { Op } from "sequelize";
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
-import { utilisateurStatutEnumerate } from "../models/Utilisateur";
+import { utilisateurStatutEnumerate } from "../models/Utilisateur.js";
 
 class utilisateursController {
   constructor(models) {
