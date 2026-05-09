@@ -79,10 +79,13 @@ class utilisateursController {
         statutCompte: utilisateurStatutEnumerate.ACTIF,
       }, { transaction });
 
+      const codeInvitation = `FAM-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
       //la création d'une famille pour lui même et le met comme createur de la famille
       const famille = await this.Famille.create({
         nom,
         identifiantCreateur: utilisateur.id,
+        codeInvitation,
       }, { transaction });
 
       const membreFamille = await this.MembreFamille.create({
