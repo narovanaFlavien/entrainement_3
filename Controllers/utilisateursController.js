@@ -10,6 +10,7 @@ class utilisateursController {
     this.MembreFamille = models.MembreFamille;
     this.Tache = models.Tache;
     this.Notification = models.Notification;
+    this.sequelize = models.sequelize;
   }
 
   //si possible chaque methode utilise les transaction pour garantir l'integrite des donnees
