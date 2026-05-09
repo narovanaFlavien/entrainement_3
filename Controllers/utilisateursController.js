@@ -168,7 +168,7 @@ class utilisateursController {
       }
 
       // Stocker l'ID utilisateur en session
-      req.session.userId = utilisateur.id_utilisateur;
+      req.session.userId = utilisateur.id;
       req.session.userRole = utilisateur.membreFamille?.role ;
 
       const { password: pwd, ...userResponse } = utilisateur.toJSON();

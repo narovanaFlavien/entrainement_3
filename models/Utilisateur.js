@@ -49,6 +49,11 @@ const createClassUtilisateur = (sequelize) => {
         foreignKey: 'identifiantUtilisateur',
         as: 'familles',
       });
+      Utilisateur.hasMany(MembreFamille, {
+        foreignKey: 'identifiantUtilisateur',
+        as: 'membreFamille',
+        onDelete: 'CASCADE',
+      });
 
       // Un utilisateur peut créer plusieurs familles
       Utilisateur.hasMany(Famille, {

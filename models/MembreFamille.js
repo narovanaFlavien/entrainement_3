@@ -5,7 +5,7 @@ const createClassMembreFamille = (sequelize) => {
   class MembreFamille extends Model {
     static associate({ Utilisateur, Famille }) {
 
-      // Un membre appartient à une famille
+    //   Un membre appartient à une famille
       MembreFamille.belongsTo(Famille, {
         foreignKey: 'identifiantFamille',
         as: 'famille',
