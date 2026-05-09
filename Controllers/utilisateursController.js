@@ -3,6 +3,8 @@ import { Op } from "sequelize";
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 import { utilisateurStatutEnumerate } from "../models/Utilisateur.js";
+import { utilisateurRoleEnumerate } from "../models/Utilisateur.js";
+
 
 class utilisateursController {
   constructor(models) {
@@ -123,11 +125,23 @@ class utilisateursController {
    */
   login = async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, motDePasse } = req.body;
 
       // Vérifier si l'utilisateur existe
       const utilisateur = await this.Utilisateur.findOne({
-        where: { email }
+        where: { email },
+        include: [
+          {
+            model: this.MembreFamille,
+            as: 'membreFamille',
+            include: [
+              {
+                model: this.Famille,
+                as: 'famille',
+              },
+            ],
+          },
+        ],
       });
 
       if (!utilisateur) {
@@ -138,7 +152,7 @@ class utilisateursController {
       }
 
       // Vérifier si le compte est actif
-      if (utilisateur.status !== 'Actif') {
+      if (utilisateur.statutCompte !== utilisateurStatutEnumerate.ACTIF) {
         return res.status(403).json({
           success: false,
           message: "Votre compte est désactivé. Contactez l'administrateur."
@@ -146,7 +160,7 @@ class utilisateursController {
       }
 
       // Vérifier le mot de passe
-      const isPasswordValid = await bcrypt.compare(password, utilisateur.password);
+      const isPasswordValid = await bcrypt.compare(motDePasse, utilisateur.motDePasse);
 
       if (!isPasswordValid) {
         return res.status(401).json({
@@ -157,7 +171,7 @@ class utilisateursController {
 
       // Stocker l'ID utilisateur en session
       req.session.userId = utilisateur.id_utilisateur;
-      req.session.userRole = utilisateur.role;
+      req.session.userRole = utilisateur.membreFamille?.role ;
 
       const { password: pwd, ...userResponse } = utilisateur.toJSON();
 
