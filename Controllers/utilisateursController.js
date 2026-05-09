@@ -6,15 +6,23 @@ import { validationResult } from "express-validator";
 class utilisateursController {
   constructor(models) {
     this.Utilisateur = models.Utilisateur;
+    this.Famille = models.Famille;
+    this.MembreFamille = models.MembreFamille;
     this.Tache = models.Tache;
     this.Notification = models.Notification;
   }
+
+  //si possible chaque methode utilise les transaction pour garantir l'integrite des donnees
+  
 
   /**
    * POST /api/utilisateurs/register
    * Inscription d'un nouvel utilisateur
    */
+  // la création d'un utilisateur entraine la création d'une famille pour lui même et le met comme createur de la famille
   register = async (req, res) => {
+    //utilisation des transaction pour garantir l'integrite des donnees
+    const transaction = await this.sequelize.transaction();
     try {
       // Validation des entrées
       const errors = validationResult(req);
@@ -53,6 +61,8 @@ class utilisateursController {
         }
       }
 
+      
+      
       // Hasher le mot de passe
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
@@ -64,13 +74,25 @@ class utilisateursController {
         email,
         password: hashedPassword,
         tel,
-        role: role || 'user',
-        status: 'Actif',
-        date_creation: new Date()
-      });
+        statutCompte: 'Actif',
+      }, { transaction });
+
+      //la création d'une famille pour lui même et le met comme createur de la famille
+      const famille = await this.Famille.create({
+        nom,
+        identifiantCreateur: utilisateur.id,
+      }, { transaction });
+
+      const membreFamille = await this.MembreFamille.create({
+        identifiantUtilisateur: utilisateur.id,
+        identifiantFamille: famille.id,
+      }, { transaction });
 
       // Retourner l'utilisateur sans le mot de passe
       const { password: pwd, ...userResponse } = utilisateur.toJSON();
+      
+      // commit de la transaction
+      await transaction.commit();
 
       return res.status(201).json({
         success: true,
@@ -80,6 +102,8 @@ class utilisateursController {
 
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
+      // rollback de la transaction
+      await transaction.rollback();
       return res.status(500).json({
         success: false,
         message: "Erreur serveur lors de l'inscription",
@@ -162,7 +186,7 @@ class utilisateursController {
             message: "Erreur lors de la déconnexion"
           });
         }
-        
+
         res.clearCookie('connect.sid');
         return res.status(200).json({
           success: true,
@@ -223,7 +247,7 @@ class utilisateursController {
       }
 
       const { password: pwd, ...userResponse } = utilisateur.toJSON();
-      
+
       // Ajouter des statistiques
       userResponse.statistiques = {
         taches_actives: utilisateur.taches?.length || 0,
@@ -275,7 +299,7 @@ class utilisateursController {
       // Vérifier si le tel est unique
       if (tel && tel !== utilisateur.tel) {
         const existingTel = await this.Utilisateur.findOne({
-          where: { 
+          where: {
             tel,
             id_utilisateur: { [Op.ne]: userId }
           }
@@ -388,9 +412,9 @@ class utilisateursController {
 
       const { page = 1, limit = 10, status, role, search } = req.query;
       const offset = (page - 1) * limit;
-      
+
       const whereClause = {};
-      
+
       if (status) whereClause.status = status;
       if (role) whereClause.role = role;
       if (search) {

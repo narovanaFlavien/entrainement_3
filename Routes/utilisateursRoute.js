@@ -1,8 +1,8 @@
-// routes/utilisateur.routes.js
+// routes/utilisateursRoute.js
 import { Router } from "express";
 import { body } from "express-validator";
 import UtilisateurController from "../Controllers/utilisateursController.js";
-import { authMiddleware, adminMiddleware } from "../middleware/auth.middleware.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -14,12 +14,15 @@ export default (models) => {
     "/register",
     [
       body("email").isEmail().withMessage("Email invalide").normalizeEmail(),
-      body("password")
+      body("motDePasse")
         .isLength({ min: 6 })
         .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
       body("nom")
         .notEmpty()
         .withMessage("Le nom est requis")
+        .trim(),
+      body("prenom")
+        .optional()
         .trim()
     ],
     controller.register
@@ -28,8 +31,8 @@ export default (models) => {
   router.post(
     "/login",
     [
-      body("email").isEmail().withMessage("Email invalide"),
-      body("password").notEmpty().withMessage("Mot de passe requis")
+      body("email").isEmail().withMessage("Email invalide").normalizeEmail(),
+      body("motDePasse").notEmpty().withMessage("Mot de passe requis")
     ],
     controller.login
   );
@@ -42,12 +45,7 @@ export default (models) => {
   router.get("/profil", controller.getProfil);
   router.put("/profil", controller.updateProfil);
   router.put("/password", controller.changePassword);
-
-  // Routes admin uniquement
-  router.get("/", adminMiddleware, controller.getAllUsers);
-  router.get("/:id", adminMiddleware, controller.getUserById);
-  router.put("/:id/status", adminMiddleware, controller.updateUserStatus);
-  router.delete("/:id", adminMiddleware, controller.deleteUser);
+  // router.get("/score-mental", controller.getScoreMental);
 
   return router;
 };

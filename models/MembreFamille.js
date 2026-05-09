@@ -48,7 +48,7 @@ const createClassMembreFamille = (sequelize) => {
       role: {
         type: DataTypes.ENUM('admin', 'membre'),
         allowNull: false,
-        defaultValue: 'membre',
+        defaultValue: 'admin',
         comment: 'Rôle du membre dans la famille : admin peut gérer les paramètres, membre a des droits limités',
       },
       dateAdhesion: {

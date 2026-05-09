@@ -101,6 +101,11 @@ const createClassUtilisateur = (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      statutCompte: {
+        type: DataTypes.ENUM('actif', 'inactif'),
+        allowNull: false,
+        defaultValue: 'actif',
+      },
     },
     {
       sequelize: sequelize,
