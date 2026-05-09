@@ -1,4 +1,14 @@
 import { Model, DataTypes } from "sequelize";
+export const utilisateurStatutEnumerate = {
+  ACTIF: 'actif',
+  INACTIF: 'inactif',
+};
+
+export const statutChargeMentaleEnumerate = {
+  VERT: 'vert',
+  ORANGE: 'orange',
+  ROUGE: 'rouge',
+};
 
 const createClassUtilisateur = (sequelize) => {
 

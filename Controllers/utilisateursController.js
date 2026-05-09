@@ -2,6 +2,7 @@
 import { Op } from "sequelize";
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
+import { utilisateurStatutEnumerate } from "../models/Utilisateur";
 
 class utilisateursController {
   constructor(models) {
@@ -75,7 +76,7 @@ class utilisateursController {
         email,
         motDePasse: hashedPassword,
         tel,
-        statutCompte: 'Actif',
+        statutCompte: utilisateurStatutEnumerate.ACTIF,
       }, { transaction });
 
       //la création d'une famille pour lui même et le met comme createur de la famille
