@@ -3,24 +3,47 @@ import { Model, DataTypes } from "sequelize";
 const createClassUtilisateur = (sequelize) => {
 
   class Utilisateur extends Model {
-    static associate({ Tache, Famille, Notification }) {
-      // Un utilisateur possède plusieurs tâches
+    static associate({ Tache, HistoriqueChargeMentale, PlanningHebdomadaire, Famille, MembreFamille }) {
+
+      // Un utilisateur peut avoir plusieurs tâches
       Utilisateur.hasMany(Tache, {
-        foreignKey: 'id_utilisateur',
+        foreignKey: 'identifiantUtilisateur',
         as: 'taches',
         onDelete: 'CASCADE',
       });
 
-      // Un utilisateur peut appartenir à plusieurs familles (partage)
-      Utilisateur.belongsToMany(Famille, {
-        through: 'Utilisateur_Famille',
-        foreignKey: 'id_utilisateur',
+      // Un utilisateur peut être assigné à plusieurs tâches
+      Utilisateur.hasMany(Tache, {
+        foreignKey: 'identifiantAssignataire',
+        as: 'tachesAssignees',
+        onDelete: 'SET NULL',
       });
 
-      // Un utilisateur reçoit plusieurs notifications
-      Utilisateur.hasMany(Notification, {
-        foreignKey: 'id_utilisateur',
-        as: 'notifications',
+      // Un utilisateur a un historique de charge mentale
+      Utilisateur.hasMany(HistoriqueChargeMentale, {
+        foreignKey: 'identifiantUtilisateur',
+        as: 'historiqueChargeMentale',
+        onDelete: 'CASCADE',
+      });
+
+      // Un utilisateur a plusieurs plannings hebdomadaires
+      Utilisateur.hasMany(PlanningHebdomadaire, {
+        foreignKey: 'identifiantUtilisateur',
+        as: 'plannings',
+        onDelete: 'CASCADE',
+      });
+
+      // Un utilisateur peut appartenir à plusieurs familles
+      Utilisateur.belongsToMany(Famille, {
+        through: MembreFamille,
+        foreignKey: 'identifiantUtilisateur',
+        as: 'familles',
+      });
+
+      // Un utilisateur peut créer plusieurs familles
+      Utilisateur.hasMany(Famille, {
+        foreignKey: 'identifiantCreateur',
+        as: 'famillesCrees',
         onDelete: 'CASCADE',
       });
     }
@@ -28,28 +51,11 @@ const createClassUtilisateur = (sequelize) => {
 
   Utilisateur.init(
     {
-      id_utilisateur: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
         allowNull: false,
-      },
-      nom: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      prenom: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      tel: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: true, // peut être facultatif
-      },
-      photo: {
-        type: DataTypes.STRING,
-        defaultValue: '',
       },
       email: {
         type: DataTypes.STRING,
@@ -59,32 +65,50 @@ const createClassUtilisateur = (sequelize) => {
           isEmail: true,
         },
       },
-      password: {
+      motDePasse: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      role: {
-        type: DataTypes.STRING,
-        defaultValue: 'user',
-        allowNull: false,
-        // exemples : 'user', 'parent', 'enfant', 'admin'
-      },
-      status: {
+      prenom: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'Actif',
-        // 'Actif', 'Inactif', 'Suspendu'
       },
-      date_creation: {
-        type: DataTypes.DATE,
+      nom: {
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
+      },
+      avatar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: '',
+      },
+      scoreChargeMentale: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        validate: {
+          min: 0,
+          max: 100,
+        },
+      },
+      statutChargeMentale: {
+        type: DataTypes.ENUM('vert', 'orange', 'rouge'),
+        allowNull: false,
+        defaultValue: 'vert',
+      },
+      modeSaturation: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
     },
     {
       sequelize: sequelize,
       modelName: "Utilisateur",
-      freezeTableName: true, // table nommée "Utilisateur"
+      freezeTableName: true,
+      timestamps: true,
+      createdAt: 'dateCreation',
+      updatedAt: 'dateModification',
     }
   );
 
